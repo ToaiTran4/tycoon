@@ -1,17 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+  color-scheme: dark;
 }
 
 html, body, #root {
   height: 100%;
   margin: 0;
+  min-height: 100vh;
 }
 
 body {
-  background: #0f172a;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(245, 158, 11, 0.08), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(59, 130, 246, 0.08), transparent 60%),
+    radial-gradient(700px 400px at 50% 120%, rgba(16, 185, 129, 0.06), transparent 60%),
+    linear-gradient(180deg, #0b1120 0%, #0f172a 40%, #0b1120 100%);
   color: #e2e8f0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(30,41,59,0.4); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(71,85,105,0.7); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.9); }
+
+/* Game card reusable style */
+@layer components {
+  .game-card {
+    @apply relative rounded-xl overflow-hidden bg-gradient-to-br from-slate-800/90 to-slate-900/90
+           border border-slate-700/70 shadow-xl backdrop-blur-sm
+           transition-all duration-300;
+  }
+  .game-card:hover {
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 20px rgba(250, 204, 21, 0.2);
+  }
+  .game-card-header {
+    @apply px-4 py-3 flex items-center justify-between border-b border-slate-700/60
+           bg-gradient-to-r from-slate-800 to-slate-800/50;
+  }
+  .game-card-title {
+    @apply font-display font-bold text-sm uppercase tracking-widest text-slate-300
+           flex items-center gap-2;
+  }
+  .stat-chip {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg
+           bg-slate-800/80 border border-slate-700 text-[11px] font-bold
+           text-slate-300;
+  }
+  .metric-label {
+    @apply text-[10px] uppercase font-black tracking-widest text-slate-500;
+  }
+  .metric-value {
+    @apply font-mono font-bold text-lg;
+  }
+  .btn-game {
+    @apply btn font-bold uppercase tracking-wide text-xs transition-all duration-200;
+  }
+  .btn-game:hover:not(:disabled) {
+    @apply -translate-y-0.5;
+  }
+  .badge-seat {
+    @apply inline-flex items-center justify-center w-6 h-6 rounded-full
+           font-bold text-[10px] shadow-inner;
+  }
+  .plot-tile {
+    @apply relative rounded-lg cursor-pointer transition-all duration-300
+           border-2 flex flex-col items-center justify-center overflow-hidden;
+  }
+  .tier-ribbon {
+    @apply absolute -top-px -left-px px-1.5 py-0.5 rounded-br-md text-[8px]
+           font-black uppercase tracking-wider backdrop-blur-sm;
+  }
+}
+
+/* Data shimmer loading effect */
+.shimmer {
+  background: linear-gradient(90deg, rgba(51,65,85,0) 0%, rgba(71,85,105,0.4) 50%, rgba(51,65,85,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Dice dot pattern */
+.dice-dot {
+  @apply w-1.5 h-1.5 bg-slate-900 rounded-full shadow-sm;
+}
+
+/* Wood / board game frame */
+.board-frame {
+  background:
+    linear-gradient(135deg, rgba(120, 53, 15, 0.4) 0%, rgba(146, 64, 14, 0.3) 50%, rgba(69, 26, 3, 0.5) 100%),
+    repeating-linear-gradient(45deg, rgba(180, 83, 9, 0.15) 0, rgba(180, 83, 9, 0.15) 2px, transparent 2px, transparent 8px);
+  border: 3px solid rgba(180, 83, 9, 0.55);
+  box-shadow:
+    inset 0 0 60px rgba(0,0,0,0.5),
+    0 10px 40px rgba(0,0,0,0.6);
+}
+
+/* Sector specific gradient tiles */
+.sector-agri { background: linear-gradient(135deg, #065f46 0%, #022c22 100%); border-color: rgba(16,185,129,0.4); }
+.sector-real_estate { background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%); border-color: rgba(59,130,246,0.4); }
+.sector-tech { background: linear-gradient(135deg, #5b21b6 0%, #4c1d95 100%); border-color: rgba(139,92,246,0.4); }
+.sector-tourism { background: linear-gradient(135deg, #b45309 0%, #78350f 100%); border-color: rgba(251,191,36,0.4); }
+
+.tier-core { background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(180,83,9,0.05)); }
+.tier-mid  { background: linear-gradient(135deg, rgba(148,163,184,0.10), rgba(51,65,85,0.05)); }
+.tier-edge { background: linear-gradient(135deg, rgba(71,85,105,0.10), rgba(15,23,42,0.05)); }
+
+.seat-0 { @apply bg-amber-500 text-amber-950; }
+.seat-1 { @apply bg-blue-500 text-blue-950; }
+.seat-2 { @apply bg-emerald-500 text-emerald-950; }
+.seat-3 { @apply bg-rose-500 text-rose-950; }
+.seat-4 { @apply bg-violet-500 text-violet-950; }
+.seat-5 { @apply bg-cyan-500 text-cyan-950; }
+
+.seat-0-ring { @apply ring-amber-500; }
+.seat-1-ring { @apply ring-blue-500; }
+.seat-2-ring { @apply ring-emerald-500; }
+.seat-3-ring { @apply ring-rose-500; }
+.seat-4-ring { @apply ring-violet-500; }
+.seat-5-ring { @apply ring-cyan-500; }

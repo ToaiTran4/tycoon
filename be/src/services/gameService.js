@@ -233,8 +233,52 @@ export async function resolveNow(code) {
   }, { timeout: 10000 });
 }
 
-export function buildView(game, me, state) {
-  if (!game || !state) return { version: game?.version || 0, now: Date.now(), game: null };
+export function buildView(game, me, players, state) {
+  if (!game) return { version: game?.version || 0, now: Date.now(), game: null };
+
+  // Lobby view: game exists but engine hasn't initialized state yet
+  if (!state && game.status === 'lobby') {
+    const dbPlayersMap = new Map((players || []).map(p => [p.id, p]));
+    const dbPs = players || [];
+    return {
+      version: game.version ?? 0,
+      now: Date.now(),
+      game: {
+        code: game.code,
+        status: 'lobby',
+        phase: game.phase || 'lobby',
+        quarter: 0,
+        totalQuarters: game.totalQuarters,
+        deadlineAt: game.deadlineAt || null,
+        hostPlayerId: game.hostPlayerId,
+        quarterSeconds: game.quarterSeconds || 0
+      },
+      me: me ? { playerId: me.id, seat: me.seat, name: me.name, ready: me.ready || false } : null,
+      players: dbPs.map(p => ({
+        id: p.id,
+        name: p.name,
+        seat: p.seat,
+        status: p.status || 'active',
+        rating: null,
+        ready: p.ready || false,
+        netWorth: CONFIG.startCash
+      })),
+      macro: null,
+      macroHistory: [],
+      dice: null,
+      listings: [],
+      activeEvents: [],
+      plots: [],
+      myState: null,
+      myPending: [],
+      myApLeft: 0,
+      finished: false,
+      ranking: []
+    };
+  }
+
+  if (!state) return { version: game.version || 0, now: Date.now(), game: null };
+  const dbPlayersMap = new Map((players || []).map(p => [p.id, p]));
 
   return {
     version: game.version,
@@ -246,17 +290,22 @@ export function buildView(game, me, state) {
       quarter: game.quarter,
       totalQuarters: game.totalQuarters,
       deadlineAt: game.deadlineAt,
-      hostPlayerId: game.hostPlayerId
+      hostPlayerId: game.hostPlayerId,
+      quarterSeconds: game.quarterSeconds || 0
     },
     me: me ? { playerId: me.id, seat: me.seat, name: me.name, ready: me.ready } : null,
-    players: Object.values(state.players).map(p => ({
-      id: p.id,
-      name: p.name,
-      seat: p.seat,
-      status: p.status,
-      rating: p.rating,
-      netWorth: p.history[p.history.length - 1]?.netWorth || CONFIG.startCash
-    })),
+    players: Object.values(state.players).map(p => {
+      const dbp = dbPlayersMap.get(p.id);
+      return {
+        id: p.id,
+        name: p.name,
+        seat: p.seat,
+        status: p.status,
+        rating: p.rating,
+        ready: dbp?.ready || false,
+        netWorth: p.history[p.history.length - 1]?.netWorth || CONFIG.startCash
+      };
+    }),
     macro: state.macro,
     macroHistory: state.macroHistory,
     dice: state.dice,

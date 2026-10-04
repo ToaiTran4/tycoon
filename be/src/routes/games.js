@@ -73,7 +73,7 @@ apiRouter.get('/games/:code', async (req, res) => {
     me = await authPlayer(prisma, req.params.code, token);
   }
 
-  const view = gameService.buildView(game, me, game.state);
+  const view = gameService.buildView(game, me, game.players, game.state);
   res.json(view);
 });
 
