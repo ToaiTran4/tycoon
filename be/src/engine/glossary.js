@@ -1,0 +1,25 @@
+export const GLOSSARY = {
+  demand_pull_inflation: {
+    term: 'Lạm phát cầu kéo',
+    desc: 'Lạm phát do tổng cầu tăng nhanh hơn tổng cung (người dân chi mạnh, doanh nghiệp không kịp sản xuất).',
+  },
+  cost_push_inflation: {
+    term: 'Lạm phát chi phí đẩy',
+    desc: 'Lạm phát do giá nguyên liệu, lương tăng đẩy lên giá bán.',
+  },
+  policy_rate: { term: 'Lãi suất cơ bản', desc: 'Lãi suất mà NH Trung ương áp đặt để điều tiết nền kinh tế.' },
+  credit_room: { term: 'Room tín dụng', desc: 'Tổng số tiền ngân hàng được phép cho vay mới trong quý.' },
+  leverage: { term: 'Đòn bẩy', desc: 'Dùng nợ để tăng quy mô đầu tư (và cả rủi ro).' },
+  de_ratio: { term: 'D/E (Nợ / Vốn chủ)', desc: 'Tỷ lệ tổng nợ trên vốn chủ. Cao = rủi ro hơn nhưng lợi nhuận tiềm năng lớn hơn.' },
+  coverage_ratio: { term: 'Hệ số thanh toán lãi', desc: 'EBIT / lãi vay phải trả; < 1 nghĩa là lợi nhuận trước thuế không đủ trả lãi.' },
+  collateral: { term: 'Tài sản đảm bảo', desc: 'Giá trị tài sản mà ngân hàng có thể bán đi nếu bạn không trả được nợ.' },
+  business_cycle: { term: 'Chu kỳ kinh tế', desc: 'Sự luân phiên giữa các pha tăng trưởng (boom), ổn định (stable) và suy thoái (recession).' },
+  supply_demand: { term: 'Cung – Cầu', desc: 'Quy luật cơ bản: cung vượt cầu → giá giảm, cầu vượt cung → giá tăng.' },
+  unemployment: { term: 'Thất nghiệp', desc: 'Tỷ lệ người dân trong độ tuổi lao động không có việc làm.' },
+  progressive_tax: { term: 'Thuế lũy tiến', desc: 'Thuế suất tăng theo thu nhập (thu nhập càng cao càng đóng nhiều).' },
+  dilution: { term: 'Pha loãng cổ phần', desc: 'Phát hành thêm cổ phiếu làm giảm tỷ lệ sở hữu của cổ đông cũ.' },
+  opportunity_cost: { term: 'Chi phí cơ hội', desc: 'Lợi ích phải hy sinh khi chọn phương án này thay vì phương án khác tốt nhất.' },
+  diversification: { term: 'Đa dạng hóa', desc: 'Đầu tư nhiều ngành để giảm rủi ro nếu một ngành gặp khó khăn.' },
+  nbv: { term: 'Giá trị còn lại (NBV)', desc: 'Nguyên giá công trình trừ hao mòn lũy kế.' },
+  pe: { term: 'P/E', desc: 'Price/Earnings — giá cổ phiếu chia cho lợi nhuận sau thuế trên một cổ phiếu.' },
+};

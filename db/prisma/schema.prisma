@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Game {
+  id             String         @id @default(cuid())
+  code           String         @unique
+  status         String         @default("lobby")
+  phase          String         @default("lobby")
+  quarter        Int            @default(0)
+  totalQuarters  Int
+  quarterSeconds Int            @default(0)
+  deadlineAt     DateTime?
+  version        Int            @default(0)
+  llmCalls       Int            @default(0)
+  seed           String
+  hostPlayerId   String?
+  state          Json?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  players        Player[]
+  ledger         LedgerEntry[]
+  reports        QuarterReport[]
+  marketReports  MarketReport[]
+}
+
+model Player {
+  id         String   @id @default(cuid())
+  gameId     String
+  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  name       String
+  tokenHash  String
+  seat       Int
+  status     String   @default("active")
+  ready      Boolean  @default(false)
+  pending    Json     @default("[]")
+  joinedAt   DateTime @default(now())
+  @@unique([gameId, name])
+  @@unique([gameId, seat])
+}
+
+model LedgerEntry {
+  id       String @id @default(cuid())
+  gameId   String
+  game     Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  playerId String
+  quarter  Int
+  seq      Int
+  memo     String
+  category String
+  lines    Json
+  @@index([gameId, playerId, quarter])
+}
+
+model QuarterReport {
+  id       String @id @default(cuid())
+  gameId   String
+  game     Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  quarter  Int
+  playerId String
+  data     Json
+  @@unique([gameId, quarter, playerId])
+}
+
+model MarketReport {
+  id       String @id @default(cuid())
+  gameId   String
+  game     Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  quarter  Int
+  data     Json
+  @@unique([gameId, quarter])
+}

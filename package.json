@@ -1,0 +1,26 @@
+{
+  "name": "tycoon-kinh-te",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": ["db", "be", "fe"],
+  "scripts": {
+    "db:up": "docker compose -f db/docker-compose.yml up -d",
+    "db:down": "docker compose -f db/docker-compose.yml down",
+    "db:migrate": "npm --prefix db run migrate",
+    "db:deploy": "npm --prefix db run deploy",
+    "dev": "concurrently -n be,fe -c blue,magenta \"npm --prefix be run dev\" \"npm --prefix fe run dev\"",
+    "build": "npm --prefix db run generate && npm --prefix fe run build",
+    "start": "npm --prefix be start",
+    "test": "npm --prefix be test && npm --prefix fe test",
+    "lint": "npm --prefix be run lint && npm --prefix fe run lint",
+    "sim": "node be/scripts/simulate.js",
+    "smoke": "node be/scripts/smoke.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "eslint": "^9.12.0",
+    "@eslint/js": "^9.12.0",
+    "prettier": "^3.3.3"
+  }
+}
