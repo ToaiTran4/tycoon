@@ -264,8 +264,8 @@ export function buildView(game, me, state) {
     activeEvents: state.macro.activeEvents,
     plots: state.plots,
     myState: me ? state.players[me.id] : null,
-    myPending: me ? me.pending : [],
-    myApLeft: me ? CONFIG.actionPoints - (me.pending?.length || 0) : 0,
+    myPending: Array.isArray(me?.pending) ? me.pending : [],
+    myApLeft: me ? CONFIG.actionPoints - (Array.isArray(me.pending) ? me.pending.length : 0) : 0,
     finished: state.finished,
     ranking: state.ranking
   };

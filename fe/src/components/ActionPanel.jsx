@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CONFIG } from '../../../be/src/engine/config.js';
+import { CONFIG } from '../lib/config.js';
 import { fmtMoney } from '../lib/format.js';
 
 export default function ActionPanel({ selectedPlot, myState, myPending, myApLeft, onAddAction, onRemoveAction, onPreview, previewResult, onReady, meReady }) {
@@ -83,10 +83,42 @@ export default function ActionPanel({ selectedPlot, myState, myPending, myApLeft
             <div className="flex flex-col gap-2">
               <input type="number" placeholder="Số tiền..." className="input input-bordered input-sm w-full" value={amount} onChange={e => setAmount(e.target.value)} />
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => handleAdd('deposit', { amount: parseInt(amount) })} className="btn btn-outline btn-sm">Gửi tiền</button>
-                <button onClick={() => handleAdd('withdraw', { amount: parseInt(amount) })} className="btn btn-outline btn-sm">Rút tiền</button>
-                <button onClick={() => handleAdd('borrow', { amount: parseInt(amount) })} className="btn btn-outline btn-sm">Vay Bank</button>
-                <button onClick={() => handleAdd('issueBond', { amount: parseInt(amount), term: 8 })} className="btn btn-outline btn-sm">Phát hành TP</button>
+                <button 
+                  onClick={() => {
+                    const val = parseInt(amount);
+                    if (!isNaN(val) && val > 0) handleAdd('deposit', { amount: val });
+                  }} 
+                  className="btn btn-outline btn-sm"
+                >
+                  Gửi tiền
+                </button>
+                <button 
+                  onClick={() => {
+                    const val = parseInt(amount);
+                    if (!isNaN(val) && val > 0) handleAdd('withdraw', { amount: val });
+                  }} 
+                  className="btn btn-outline btn-sm"
+                >
+                  Rút tiền
+                </button>
+                <button 
+                  onClick={() => {
+                    const val = parseInt(amount);
+                    if (!isNaN(val) && val > 0) handleAdd('borrow', { amount: val });
+                  }} 
+                  className="btn btn-outline btn-sm"
+                >
+                  Vay Bank
+                </button>
+                <button 
+                  onClick={() => {
+                    const val = parseInt(amount);
+                    if (!isNaN(val) && val > 0) handleAdd('issueBond', { amount: val, term: 8 });
+                  }} 
+                  className="btn btn-outline btn-sm"
+                >
+                  Phát hành TP
+                </button>
               </div>
             </div>
           )}
@@ -96,7 +128,15 @@ export default function ActionPanel({ selectedPlot, myState, myPending, myApLeft
               {!selectedPlot.ownerId ? (
                 <div className="flex flex-col gap-2">
                   <input type="number" placeholder="Giá đấu..." className="input input-bordered input-sm w-full" value={amount} onChange={e => setAmount(e.target.value)} />
-                  <button onClick={() => handleAdd('bid', { plotId: selectedPlot.id, amount: parseInt(amount) })} className="btn btn-primary btn-sm">Đấu giá</button>
+                  <button 
+                    onClick={() => {
+                      const val = parseInt(amount);
+                      if (!isNaN(val) && val > 0) handleAdd('bid', { plotId: selectedPlot.id, amount: val });
+                    }} 
+                    className="btn btn-primary btn-sm"
+                  >
+                    Đấu giá
+                  </button>
                 </div>
               ) : selectedPlot.ownerId === myState?.id ? (
                 <button onClick={() => handleAdd('sellPlot', { plotId: selectedPlot.id })} className="btn btn-error btn-sm">Rao bán</button>

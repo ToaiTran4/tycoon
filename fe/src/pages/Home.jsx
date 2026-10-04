@@ -88,7 +88,10 @@ export default function Home() {
                       className="input input-bordered w-full" 
                       placeholder="0 = vô hạn" 
                       value={quarterSeconds}
-                      onChange={e => setQuarterSeconds(parseInt(e.target.value))}
+                      onChange={e => {
+                      const val = parseInt(e.target.value);
+                      setQuarterSeconds(isNaN(val) ? 0 : val);
+                    }}
                       disabled={loading}
                     />
                   </label>

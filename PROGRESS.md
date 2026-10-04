@@ -177,7 +177,7 @@ npm run lint    # eslint
 
 ## M7: UI đầy đủ: Game.jsx, components, useGame polling, reports + ledger + charts + rules — [x]
 
-- [x] Giao diện React + Tailwind + daisyUI hiện đại.
+- [x] Giao diện React + Tailwind + daisyUI hiện đại (Fix lỗi theme tối và crash do myPending).
 - [x] `Header.jsx`: hiển thị chỉ số vĩ mô và xúc xắc.
 - [x] `Map.jsx`: bản đồ 6x6 tương tác, hiển thị ngành và cấp độ.
 - [x] `Financials.jsx`: thẻ tóm tắt tài sản, vốn chủ và xếp hạng.
@@ -216,4 +216,5 @@ npm run lint    # eslint
 - **Backend:** Hệ thống API hoàn chỉnh với xác thực, chốt quý tự động và view model an toàn.
 - **Frontend:** UI React hiện đại, bản đồ tương tác, bảng tài chính và quản lý hành động đầy đủ.
 - **LLM:** Tích hợp bản tin và cố vấn AI.
+- **Sửa lỗi UI:** Khắc phục lỗi "màn hình đen" bằng cách đặt theme mặc định là `light` và thiết lập `VITE_API_URL`. Sửa lỗi crash `myPending is not iterable` bằng cách thêm fallback an toàn trong `Game.jsx` và `gameService.js`.
 - **Dự án hiện tại đã sẵn sàng để chơi thử và triển khai thực tế.**

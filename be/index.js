@@ -12,9 +12,7 @@ import { boot as bootScheduler } from './src/services/scheduler.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
-if (process.env.CORS_ORIGIN) {
-  app.use(cors({ origin: process.env.CORS_ORIGIN.split(',').map(s => s.trim()).filter(Boolean) }));
-}
+app.use(cors()); // Allow all for development to fix the preflight issue
 app.use(express.json({ limit: '5mb' }));
 app.use('/api', apiRouter);
 
