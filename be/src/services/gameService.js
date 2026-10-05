@@ -19,7 +19,7 @@ async function lockGame(tx, id) {
   }
 }
 
-export async function createGame({ hostName, totalQuarters = 20, quarterSeconds = 0 }) {
+export async function createGame({ hostName, avatar = 'male', totalQuarters = 20, quarterSeconds = 0 }) {
   const code = Math.random().toString(36).substring(2, 8).toUpperCase();
   const token = newToken();
   const tokenHash = hashToken(token);
@@ -36,6 +36,7 @@ export async function createGame({ hostName, totalQuarters = 20, quarterSeconds 
       players: {
         create: {
           name: hostName,
+          avatar,
           tokenHash,
           seat: 0,
           status: 'active',
@@ -54,7 +55,7 @@ export async function createGame({ hostName, totalQuarters = 20, quarterSeconds 
   return { ok: true, code, token, playerId: game.players[0].id };
 }
 
-export async function joinGame(code, name) {
+export async function joinGame(code, name, avatar = 'male') {
   return await prisma.$transaction(async (tx) => {
     const game = await tx.game.findUnique({
       where: { code },
@@ -74,6 +75,7 @@ export async function joinGame(code, name) {
       data: {
         gameId: game.id,
         name,
+        avatar,
         tokenHash,
         seat
       }
@@ -253,10 +255,11 @@ export function buildView(game, me, players, state) {
         hostPlayerId: game.hostPlayerId,
         quarterSeconds: game.quarterSeconds || 0
       },
-      me: me ? { playerId: me.id, seat: me.seat, name: me.name, ready: me.ready || false } : null,
+      me: me ? { playerId: me.id, seat: me.seat, name: me.name, avatar: me.avatar || 'male', ready: me.ready || false } : null,
       players: dbPs.map(p => ({
         id: p.id,
         name: p.name,
+        avatar: p.avatar || 'male',
         seat: p.seat,
         status: p.status || 'active',
         rating: null,
@@ -293,12 +296,13 @@ export function buildView(game, me, players, state) {
       hostPlayerId: game.hostPlayerId,
       quarterSeconds: game.quarterSeconds || 0
     },
-    me: me ? { playerId: me.id, seat: me.seat, name: me.name, ready: me.ready } : null,
+    me: me ? { playerId: me.id, seat: me.seat, name: me.name, avatar: me.avatar || 'male', ready: me.ready } : null,
     players: Object.values(state.players).map(p => {
       const dbp = dbPlayersMap.get(p.id);
       return {
         id: p.id,
         name: p.name,
+        avatar: dbp?.avatar || 'male',
         seat: p.seat,
         status: p.status,
         rating: p.rating,

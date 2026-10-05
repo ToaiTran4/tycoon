@@ -8,7 +8,7 @@ import { CONFIG } from '../lib/config.js';
 import {
   TrendingDown, TrendingUp, Activity, Percent, Landmark,
   AlertTriangle, Award, Users, Warehouse, Newspaper,
-  Sparkles, Briefcase, Scale, Banknote, PiggyBank,
+  Sparkles, Scale, Banknote, PiggyBank, HelpCircle,
 } from 'lucide-react';
 
 const SECTOR_ICON = { agri: '🌾', real_estate: '🏘️', tech: '💻', tourism: '🏖️' };
@@ -67,7 +67,7 @@ export default function MarketPanel({ macro, macroHistory, activeEvents, listing
         </div>
 
         <div className="p-3">
-          {tab === 'overview' && <OverviewTab macro={macro} listings={listings} myState={myState} />}
+          {tab === 'overview' && <OverviewTab macro={macro} myState={myState} />}
           {tab === 'sectors'  && <SectorsTab sectors={macro.sectors} />}
           {tab === 'events'   && <EventsTab events={activeEvents} />}
           {tab === 'history'  && <HistoryTab history={macroHistory} />}
@@ -124,7 +124,7 @@ function Metric({ icon, label, value, sub, tone = 'ok' }) {
 }
 
 /* ============== Overview Tab ============== */
-function OverviewTab({ macro, listings, myState }) {
+function OverviewTab({ macro, myState }) {
   return (
     <div className="space-y-3">
       {/* Bank + investors + gov summary */}
@@ -142,31 +142,8 @@ function OverviewTab({ macro, listings, myState }) {
           ['Quỹ', `${fmtMoney(macro.gov?.cash ?? 0)}`],
         ]} />
       </div>
-      {/* Listings (plots for sale) */}
-      <div>
-        <div className="text-[11px] uppercase font-black tracking-wider text-slate-400 mb-2 flex items-center gap-1">
-          <Briefcase size={12} className="text-amber-400" /> Đất rao bán / thanh lý
-        </div>
-        {(!listings || listings.length === 0) ? (
-          <div className="text-xs text-slate-500 italic rounded-lg border border-dashed border-slate-700 p-3 text-center">
-            Hiện không có ô đất nào trên thị trường
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {listings.map(l => (
-              <div key={l.plotId} className="rounded-lg border border-slate-700/70 bg-slate-900/50 p-2 text-xs hover:border-amber-500/40 transition-colors">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-slate-200">Ô #{l.plotId}</span>
-                  <span className={`badge badge-xs font-bold
-                    ${l.source === 'foreclosure' ? 'badge-error' : 'badge-ghost'}`}>
-                    {l.source === 'foreclosure' ? 'Thanh lý' : 'Rao bán'}
-                  </span>
-                </div>
-                <div className="text-amber-300 font-mono font-bold mt-1">Giá: {fmtMoney(l.reserve)}</div>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="rounded-lg border border-dashed border-slate-700/70 px-3 py-2 text-[11px] text-slate-400">
+        Giá rao bán và thanh lý được hiển thị khi di chuột lên ô đất tương ứng trên bản đồ thành phố.
       </div>
     </div>
   );
@@ -356,6 +333,7 @@ function LegendDot({ color, label }) {
 
 /* ============== Role News Feed ============== */
 function RoleNewsFeed({ macro, players }) {
+  const [open, setOpen] = useState(false);
   const topPlayer = [...(players || [])].sort((a,b) => (b.netWorth||0) - (a.netWorth||0))[0];
   const poorest = [...(players || [])].sort((a,b) => (a.netWorth||0) - (b.netWorth||0))[0];
   const items = [
@@ -390,17 +368,24 @@ function RoleNewsFeed({ macro, players }) {
         <div className="game-card-title">
           <Award size={14} className="text-amber-400" /> NHẬT KÝ VAI TRÒ
         </div>
-        <span className="text-[10px] uppercase font-black text-slate-500 tracking-widest">vì sao →</span>
+        <button
+          onClick={() => setOpen(value => !value)}
+          className={`btn btn-ghost btn-xs ${open ? 'text-amber-300' : 'text-slate-400'}`}
+          title={open ? 'Ẩn nhật ký vai trò' : 'Mở nhật ký vai trò'}
+          aria-label={open ? 'Ẩn nhật ký vai trò' : 'Mở nhật ký vai trò'}
+        >
+          <HelpCircle size={16} />
+        </button>
       </div>
-      <div className="p-3 space-y-2 max-h-80 overflow-y-auto pr-1">
-        {items.map((it, i) => (
-          <div key={i} className={`rounded-lg border px-3 py-2.5 text-xs animate-slide-in ${toneCls[it.tone]}`}
-               style={{ animationDelay: `${i*40}ms` }}>
-            <div className="font-black tracking-wide text-slate-200 mb-0.5">{it.role}</div>
-            <div className="text-slate-300 leading-snug">{it.text}</div>
-          </div>
-        ))}
-      </div>
+      {open && <div className="p-3 space-y-2 max-h-80 overflow-y-auto pr-1">
+          {items.map((it, i) => (
+            <div key={i} className={`rounded-lg border px-3 py-2.5 text-xs animate-slide-in ${toneCls[it.tone]}`}
+                 style={{ animationDelay: `${i*40}ms` }}>
+              <div className="font-black tracking-wide text-slate-200 mb-0.5">{it.role}</div>
+              <div className="text-slate-300 leading-snug">{it.text}</div>
+            </div>
+          ))}
+        </div>}
     </div>
   );
 }

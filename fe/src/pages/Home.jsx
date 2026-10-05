@@ -8,16 +8,19 @@ import {
   ArrowRight, Copy, BookOpen, HelpCircle, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AvatarPicker } from '../components/ChibiAvatar.jsx';
 
 export default function Home() {
   const navigate = useNavigate();
   const [tab, setTab] = useState('create');
   const [createName, setCreateName] = useState('');
+  const [createAvatar, setCreateAvatar] = useState('male');
   const [totalQuarters, setTotalQuarters] = useState(20);
   const [quarterSeconds, setQuarterSeconds] = useState(0);
 
   const [joinCode, setJoinCode] = useState('');
   const [joinName, setJoinName] = useState('');
+  const [joinAvatar, setJoinAvatar] = useState('male');
   const [loading, setLoading] = useState(false);
   const [faq, setFaq] = useState(null);
 
@@ -26,7 +29,7 @@ export default function Home() {
     if (createName.length < 2) return alert('Tên quá ngắn (tối thiểu 2 ký tự)');
     setLoading(true);
     try {
-      const res = await api.createGame({ hostName: createName, totalQuarters, quarterSeconds });
+      const res = await api.createGame({ hostName: createName, avatar: createAvatar, totalQuarters, quarterSeconds });
       saveToken(res.code, res.token);
       navigate(`/game/${res.code}`);
     } catch (e) {
@@ -42,7 +45,7 @@ export default function Home() {
     if (joinName.length < 2) return alert('Tên quá ngắn');
     setLoading(true);
     try {
-      const res = await api.joinGame(joinCode.toUpperCase(), { name: joinName });
+      const res = await api.joinGame(joinCode.toUpperCase(), { name: joinName, avatar: joinAvatar });
       saveToken(res.code, res.token);
       navigate(`/game/${res.code}`);
     } catch (e) {
@@ -160,6 +163,10 @@ export default function Home() {
                       disabled={loading}
                     />
                   </label>
+                  <div>
+                    <div className="label"><span className="label-text font-bold">🎭 Chọn nhân vật</span></div>
+                    <AvatarPicker value={createAvatar} onChange={setCreateAvatar} disabled={loading} />
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label className="form-control w-full">
                       <div className="label"><span className="label-text font-bold flex items-center gap-1.5"><Trophy size={13}/> Số quý (độ dài ván)</span></div>
@@ -185,7 +192,7 @@ export default function Home() {
                         disabled={loading}
                       />
                       <div className="label !py-1"><span className="label-text-alt text-slate-500">
-                        0 = chơi không đồng hồ (đề xuất). Nếu đặt > 0: sẽ tự động chốt quý khi hết giờ.
+                        0 = chơi không đồng hồ (đề xuất). Nếu đặt &gt; 0: sẽ tự động chốt quý khi hết giờ.
                       </span></div>
                     </label>
                   </div>
@@ -226,6 +233,10 @@ export default function Home() {
                       </button>
                     </div>
                   </label>
+                  <div>
+                    <div className="label"><span className="label-text font-bold">🎭 Chọn nhân vật</span></div>
+                    <AvatarPicker value={joinAvatar} onChange={setJoinAvatar} disabled={loading} />
+                  </div>
                   <label className="form-control w-full">
                     <div className="label"><span className="label-text font-bold">👤 Tên hiển thị của bạn</span></div>
                     <input

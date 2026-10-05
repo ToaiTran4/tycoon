@@ -14,11 +14,12 @@ apiRouter.get('/health', (_req, res) => {
 
 const GameCreateSchema = z.object({
   hostName: z.string().min(2).max(20),
+  avatar: z.enum(['male', 'female']).optional().default('male'),
   totalQuarters: z.number().int().min(4).max(60).optional().default(20),
   quarterSeconds: z.number().int().min(0).max(3600).optional().default(0),
 });
 
-const JoinSchema = z.object({ name: z.string().min(2).max(20) });
+const JoinSchema = z.object({ name: z.string().min(2).max(20), avatar: z.enum(['male', 'female']).optional().default('male') });
 const ActionsSchema = z.object({ actions: z.array(z.any()) });
 const PreviewSchema = z.object({ actions: z.array(z.any()) });
 const ReadySchema = z.object({ ready: z.boolean() });
@@ -49,8 +50,8 @@ apiRouter.post('/games', async (req, res) => {
 
 apiRouter.post('/games/:code/join', async (req, res) => {
   try {
-    const { name } = JoinSchema.parse(req.body);
-    const result = await gameService.joinGame(req.params.code, name);
+    const { name, avatar } = JoinSchema.parse(req.body);
+    const result = await gameService.joinGame(req.params.code, name, avatar);
     if (!result.ok) return err(res, 400, result.error.toUpperCase(), result.error);
     return res.json(result);
   } catch (e) {

@@ -115,6 +115,33 @@ body {
 .tier-mid  { background: linear-gradient(135deg, rgba(148,163,184,0.10), rgba(51,65,85,0.05)); }
 .tier-edge { background: linear-gradient(135deg, rgba(71,85,105,0.10), rgba(15,23,42,0.05)); }
 
+/* Compact chibi tokens shown beside the city board. */
+.city-stage { @apply flex items-center gap-2 md:gap-3; }
+.city-avatar-rail { @apply hidden lg:flex w-16 shrink-0 flex-col items-center justify-center gap-4; }
+.city-avatar-rail-right { @apply flex-col-reverse; }
+.city-avatar { @apply flex flex-col items-center gap-1 opacity-75 transition-all; }
+.city-avatar-current { @apply opacity-100 scale-110; }
+.city-avatar-name { @apply max-w-16 truncate text-center text-[9px] font-bold text-slate-300; }
+.chibi { @apply relative inline-block shrink-0; width: 48px; height: 52px; }
+.chibi-sm { transform: scale(.82); transform-origin: center bottom; }
+.chibi-head { @apply absolute z-20 rounded-full border-2 border-slate-950/50 shadow-md; width: 27px; height: 25px; left: 10px; top: 10px; }
+.chibi-hair { @apply absolute z-30 rounded-t-full rounded-b-md; width: 29px; height: 14px; left: 9px; top: 7px; transform: rotate(-4deg); }
+.chibi-female .chibi-hair { height: 20px; border-radius: 14px 14px 9px 9px; }
+.chibi-eye { @apply absolute rounded-full bg-slate-950; width: 3px; height: 4px; top: 10px; }
+.chibi-eye-left { left: 6px; }
+.chibi-eye-right { right: 6px; }
+.chibi-mouth { @apply absolute rounded-full border-b-2 border-rose-700/70; width: 7px; height: 4px; left: 8px; top: 15px; }
+.chibi-body { @apply absolute z-10 rounded-t-xl rounded-b-md shadow-md; width: 25px; height: 22px; left: 11px; top: 31px; }
+.chibi-arm { @apply absolute z-0 rounded-full; width: 7px; height: 17px; top: 33px; }
+.chibi-arm-left { left: 7px; transform: rotate(22deg); }
+.chibi-arm-right { right: 7px; transform: rotate(-22deg); }
+.avatar-choice { @apply flex items-center justify-center gap-2 rounded-lg border border-slate-700/70 bg-slate-900/50 px-3 py-2 text-xs text-slate-300 transition-colors hover:border-amber-500/50; }
+.avatar-choice-active { @apply border-amber-500/80 bg-amber-500/10 text-amber-200 ring-1 ring-amber-500/40; }
+
+@media (max-width: 1023px) {
+  .city-stage { @apply block; }
+}
+
 .seat-0 { @apply bg-amber-500 text-amber-950; }
 .seat-1 { @apply bg-blue-500 text-blue-950; }
 .seat-2 { @apply bg-emerald-500 text-emerald-950; }

@@ -13,7 +13,7 @@ import ResultScreen from '../components/ResultScreen.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Copy, Share2, AlertTriangle, ArrowLeft,
-  Crown, Play, Building2, ClipboardList, BarChart3
+  Crown, Play, Building2, ClipboardList, BarChart3, ChevronDown
 } from 'lucide-react';
 import { seatColor } from '../lib/config.js';
 import { toast, Toaster } from 'sonner';
@@ -26,6 +26,7 @@ export default function Game() {
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [previewResult, setPreviewResult] = useState(null);
   const [bottomTab, setBottomTab] = useState('ranking');
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [copyMsg, setCopyMsg] = useState('');
 
   // Auto preview my pending actions on change
@@ -259,7 +260,16 @@ export default function Game() {
             <div className="game-card-title">
               <ClipboardList size={14} className="text-amber-400" /> THÔNG TIN CHI TIẾT
             </div>
-            <div className="tabs tabs-boxed tabs-sm">
+            <button onClick={() => setDetailsOpen(value => !value)}
+              className="btn btn-ghost btn-xs text-slate-400 hover:text-amber-300"
+              title={detailsOpen ? 'Ẩn thông tin chi tiết' : 'Mở thông tin chi tiết'}
+              aria-label={detailsOpen ? 'Ẩn thông tin chi tiết' : 'Mở thông tin chi tiết'}>
+              <ChevronDown size={16} className={`transition-transform ${detailsOpen ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
+
+          {detailsOpen && <div className="p-2 md:p-4">
+            <div className="tabs tabs-boxed tabs-sm mb-3 w-fit">
               <button onClick={() => setBottomTab('ranking')}
                 className={`tab ${bottomTab==='ranking' ? 'tab-active !bg-amber-500/20 !text-amber-300' : ''}`}>
                 <BarChart3 size={13} className="mr-1.5" /> Xếp hạng & Thống kê
@@ -269,9 +279,6 @@ export default function Game() {
                 <Building2 size={13} className="mr-1.5" /> Báo cáo & Sổ cái
               </button>
             </div>
-          </div>
-
-          <div className="p-2 md:p-4">
             <AnimatePresence mode="wait">
               <motion.div
                 key={bottomTab}
@@ -299,7 +306,7 @@ export default function Game() {
                 )}
               </motion.div>
             </AnimatePresence>
-          </div>
+          </div>}
         </div>
       </div>
 

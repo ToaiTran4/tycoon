@@ -240,7 +240,7 @@ function add(action, apLeft, onAdd) {
     alert('Hết Điểm Hành Động (AP) cho quý này');
     return;
   }
-  onAddAction(action);
+  onAdd(action);
 }
 
 function shortName(t) {

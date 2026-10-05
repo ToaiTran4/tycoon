@@ -1,6 +1,7 @@
 import { CONFIG, seatColor } from '../lib/config.js';
 import { fmtMoney, fmtNumber } from '../lib/format.js';
 import { Hammer, Leaf, Building2, Code2, Waves, AlertTriangle, Star } from 'lucide-react';
+import { ChibiAvatar } from './ChibiAvatar.jsx';
 
 const SECTOR_META = {
   agri:        { icon: <Leaf size={16} />,      cls: 'sector-agri' },
@@ -30,8 +31,10 @@ export default function GameMap({ plots, players, listings, onPlotClick, selecte
         </div>
       </div>
 
-      {/* Board frame */}
-      <div className="board-frame rounded-2xl p-3 md:p-5 relative">
+      {/* City board with player avatars facing inward */}
+      <div className="city-stage">
+        <AvatarRail players={players?.slice(0, 3)} side="left" myId={myId} />
+        <div className="board-frame rounded-2xl p-3 md:p-5 relative flex-1 min-w-0">
         {/* Inner city feel layer */}
         <div className="absolute inset-3 md:inset-5 rounded-xl pointer-events-none"
           style={{
@@ -55,6 +58,8 @@ export default function GameMap({ plots, players, listings, onPlotClick, selecte
             })
           )}
         </div>
+        </div>
+        <AvatarRail players={players?.slice(3, 6)} side="right" myId={myId} />
       </div>
 
       {/* Legend */}
@@ -65,6 +70,20 @@ export default function GameMap({ plots, players, listings, onPlotClick, selecte
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function AvatarRail({ players = [], side, myId }) {
+  if (!players.length) return null;
+  return (
+    <div className={`city-avatar-rail city-avatar-rail-${side}`}>
+      {players.map(player => (
+        <div key={player.id} className={`city-avatar ${player.id === myId ? 'city-avatar-current' : ''}`}>
+          <ChibiAvatar gender={player.avatar} size="sm" />
+          <span className="city-avatar-name">{player.name}</span>
+        </div>
+      ))}
     </div>
   );
 }
