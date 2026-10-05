@@ -224,7 +224,7 @@ export default function Game() {
 
         {/* MIDDLE: Financials + Map  */}
         <div className="xl:col-span-6 flex flex-col gap-4 order-1 xl:order-2">
-          <Financials myState={myState} quarter={game.quarter} />
+          <Financials myState={myState} quarter={game.quarter} compact />
           <div className="game-card p-3 md:p-5">
             <GameMap
               plots={plots} players={players} listings={listings}

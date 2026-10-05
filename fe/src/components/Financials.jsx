@@ -5,7 +5,7 @@ import {
   BadgeDollarSign, TrendingUp, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
 
-export default function Financials({ myState, quarter }) {
+export default function Financials({ myState, quarter, compact = false }) {
   if (!myState) return null;
   const { balances, rating, loans, bonds, shares, history } = myState;
   const last = history?.[history.length - 1];
@@ -28,6 +28,23 @@ export default function Financials({ myState, quarter }) {
   const de        = totalLiab === 0 ? 0 : (capital === 0 ? 99 : +(totalLiab / capital).toFixed(2));
 
   const ratingCls = CONFIG.ratingColors[rating] || CONFIG.ratingColors.D;
+
+  if (compact) {
+    return (
+      <div className="relative z-20 group !overflow-visible">
+        <div className="game-card flex items-center justify-between gap-3 p-3 cursor-help">
+          <div className="flex items-center gap-2">
+            <BadgeDollarSign size={15} className="text-amber-400" />
+            <span className="game-card-title !text-[11px]">BẢNG CÂN ĐỐI NHANH</span>
+          </div>
+          <span className="text-[10px] text-slate-500">Hover để xem</span>
+        </div>
+        <div className="absolute left-0 right-0 top-full z-[70] mt-2 max-h-[70vh] overflow-y-auto rounded-xl border border-slate-600 bg-slate-950/95 p-3 opacity-0 pointer-events-none -translate-y-1 shadow-2xl backdrop-blur transition-all duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0">
+          <Financials myState={myState} quarter={quarter} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">

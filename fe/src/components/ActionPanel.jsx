@@ -32,12 +32,18 @@ export default function ActionPanel({
   const [bondTerm, setBondTerm] = useState(8);
   const [workerVal, setWorkerVal] = useState('');
   const [fraction, setFraction] = useState(20);
+  const [actionTab, setActionTab] = useState('queue');
+  const [actionHistory, setActionHistory] = useState([]);
   const selectedLoanId = useMemo(() => myState?.loans?.[0]?.id, [myState?.loans]);
 
   const isBankrupt = myState?.status === 'bankrupt' || myState?.status === 'acquired';
   const disabledAll = disabled || isBankrupt;
   const plot = selectedPlot;
   const owned = plot && myState && plot.ownerId === myState.id;
+  const addAction = (action) => {
+    setActionHistory(history => [{ ...action, loggedAt: Date.now() }, ...history].slice(0, 30));
+    onAddAction(action);
+  };
 
   return (
     <div className="game-card flex flex-col h-full min-h-[520px]">
@@ -125,20 +131,20 @@ export default function ActionPanel({
                 plot={plot} owned={owned} sector={sector} setSector={setSector}
                 myState={myState} quarter={quarter}
                 workerVal={workerVal} setWorkerVal={setWorkerVal}
-                disabled={disabledAll} add={(x) => add(x, myApLeft, onAddAction)}
+                disabled={disabledAll} add={(x) => add(x, myApLeft, addAction)}
               />
             )}
             {tab === 'finance' && (
               <FinanceTab
                 myState={myState} amount={amount} setAmount={setAmount}
-                disabled={disabledAll} add={(x) => add(x, myApLeft, onAddAction)}
+                disabled={disabledAll} add={(x) => add(x, myApLeft, addAction)}
                 selectedLoanId={selectedLoanId}
               />
             )}
             {tab === 'land' && (
               <LandTab
                 plot={plot} owned={owned} amount={amount} setAmount={setAmount}
-                disabled={disabledAll} add={(x) => add(x, myApLeft, onAddAction)}
+                disabled={disabledAll} add={(x) => add(x, myApLeft, addAction)}
                 myState={myState}
               />
             )}
@@ -147,7 +153,7 @@ export default function ActionPanel({
                 myState={myState} amount={amount} setAmount={setAmount}
                 bondTerm={bondTerm} setBondTerm={setBondTerm}
                 fraction={fraction} setFraction={setFraction}
-                disabled={disabledAll} add={(x) => add(x, myApLeft, onAddAction)}
+                disabled={disabledAll} add={(x) => add(x, myApLeft, addAction)}
               />
             )}
           </motion.div>
@@ -179,8 +185,27 @@ export default function ActionPanel({
         )}
       </div>
 
-      {/* Pending actions */}
+      {/* Pending actions and local action history */}
       <div className="border-t border-slate-700/70 p-3">
+        <div className="tabs tabs-boxed tabs-sm grid grid-cols-2 mb-2">
+          <button onClick={() => setActionTab('queue')} className={`tab ${actionTab === 'queue' ? 'tab-active !bg-amber-500/20 !text-amber-300' : ''}`}>
+            Hàng chờ ({myPending?.length || 0})
+          </button>
+          <button onClick={() => setActionTab('history')} className={`tab ${actionTab === 'history' ? 'tab-active !bg-amber-500/20 !text-amber-300' : ''}`}>
+            Lịch sử ({actionHistory.length})
+          </button>
+        </div>
+        {actionTab === 'history' ? (
+          <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
+            {actionHistory.length > 0 ? actionHistory.map((a, i) => (
+              <div key={`${a.loggedAt}-${i}`} className="flex items-center gap-2 rounded-lg border border-slate-700/70 bg-slate-900/50 px-2.5 py-1.5 text-xs">
+                <span className="text-slate-500 font-mono">{i + 1}</span>
+                <span className="truncate text-slate-200">{LABEL[a.type] || a.type}</span>
+                {a.plotId != null && <span className="text-slate-500">Ô #{a.plotId}</span>}
+              </div>
+            )) : <div className="text-[11px] italic text-slate-500 text-center py-3">Chưa có hành động trong phiên này</div>}
+          </div>
+        ) : <>
         <div className="text-[10px] uppercase font-black tracking-widest text-slate-400 mb-2 flex items-center justify-between">
           <span>Hàng chờ · {myPending?.length || 0}</span>
           <span className="text-slate-500 font-mono">Thứ tự: {PROCESS_ORDER.filter(t => myPending?.some(a => a.type === t)).length > 0
@@ -229,6 +254,7 @@ export default function ActionPanel({
             <Eye size={12} className="mr-1" /> Xem trước kết quả
           </button>
         )}
+        </>}
       </div>
     </div>
   );

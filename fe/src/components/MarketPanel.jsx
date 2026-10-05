@@ -20,20 +20,22 @@ export default function MarketPanel({ macro, macroHistory, activeEvents, listing
   return (
     <div className="flex flex-col gap-3">
       {/* Top headline */}
-      <div className="game-card">
+      <div className="game-card relative z-30 !overflow-visible group">
         <div className="game-card-header">
           <div className="game-card-title">
             <Newspaper size={14} className="text-amber-400" /> BẢN TIN THỊ TRƯỜNG
           </div>
+          <span className="text-[10px] text-slate-500">Di chuột để xem điểm tin</span>
           <span className={`badge badge-xs font-bold border ${CONFIG.phaseColors[macro.phase]}`}>
             <Activity size={10} className="mr-1" />
             Giai đoạn: {CONFIG.phaseNames[macro.phase]}
           </span>
         </div>
-        <div className="p-4 space-y-3">
-          <HeadlineSentence macro={macro} dice={dice} players={players} />
+        <div className="absolute left-2 right-2 top-full z-[70] mt-2 origin-top opacity-0 pointer-events-none -translate-y-1 transition-all duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0">
+          <div className="rounded-xl border border-slate-600 bg-slate-950/95 p-3 shadow-2xl backdrop-blur">
+            <HeadlineSentence macro={macro} dice={dice} players={players} />
           {/* 6 macro metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3">
             <Metric icon={<PiggyBank size={13} />} label="Tiền gửi" value={fmtPctQ(macro.depositRate)} />
             <Metric icon={<Banknote size={13} />} label="Lãi vay" value={fmtPctQ(macro.lendingBase)} tone={macro.lendingBase > 0.05 ? 'warn' : 'ok'} />
             <Metric icon={<Landmark size={13} />} label="Room tín dụng"
@@ -44,6 +46,7 @@ export default function MarketPanel({ macro, macroHistory, activeEvents, listing
             <Metric icon={<Users size={13} />} label="Thất nghiệp" value={fmtPctQ(macro.unemployment)} tone={macro.unemployment > 0.08 ? 'warn' : 'ok'} />
             <Metric icon={<Scale size={13} />} label="CPI index" value={fmtNumber(macro.cpi)} />
             <Metric icon={<Warehouse size={13} />} label="Giá đất" value={fmtNumber(macro.landIndex)} tone="good" />
+            </div>
           </div>
         </div>
       </div>
@@ -333,7 +336,6 @@ function LegendDot({ color, label }) {
 
 /* ============== Role News Feed ============== */
 function RoleNewsFeed({ macro, players }) {
-  const [open, setOpen] = useState(false);
   const topPlayer = [...(players || [])].sort((a,b) => (b.netWorth||0) - (a.netWorth||0))[0];
   const poorest = [...(players || [])].sort((a,b) => (a.netWorth||0) - (b.netWorth||0))[0];
   const items = [
@@ -363,21 +365,16 @@ function RoleNewsFeed({ macro, players }) {
     gold:   'border-yellow-500/40 bg-gradient-to-r from-yellow-500/10 to-amber-500/10',
   };
   return (
-    <div className="game-card">
+    <div className="game-card relative z-20 !overflow-visible group">
       <div className="game-card-header">
         <div className="game-card-title">
-          <Award size={14} className="text-amber-400" /> NHẬT KÝ VAI TRÒ
+          <Award size={14} className="text-amber-400" /> CẨM NANG
         </div>
-        <button
-          onClick={() => setOpen(value => !value)}
-          className={`btn btn-ghost btn-xs ${open ? 'text-amber-300' : 'text-slate-400'}`}
-          title={open ? 'Ẩn nhật ký vai trò' : 'Mở nhật ký vai trò'}
-          aria-label={open ? 'Ẩn nhật ký vai trò' : 'Mở nhật ký vai trò'}
-        >
+        <button className="btn btn-ghost btn-xs text-slate-400" title="Mở cẩm nang" aria-label="Mở cẩm nang">
           <HelpCircle size={16} />
         </button>
       </div>
-      {open && <div className="p-3 space-y-2 max-h-80 overflow-y-auto pr-1">
+      <div className="absolute left-2 right-2 top-full z-[70] mt-2 max-h-80 origin-top overflow-y-auto rounded-xl border border-slate-600 bg-slate-950/95 p-3 opacity-0 pointer-events-none -translate-y-1 shadow-2xl backdrop-blur transition-all duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0">
           {items.map((it, i) => (
             <div key={i} className={`rounded-lg border px-3 py-2.5 text-xs animate-slide-in ${toneCls[it.tone]}`}
                  style={{ animationDelay: `${i*40}ms` }}>
@@ -385,7 +382,7 @@ function RoleNewsFeed({ macro, players }) {
               <div className="text-slate-300 leading-snug">{it.text}</div>
             </div>
           ))}
-        </div>}
+        </div>
     </div>
   );
 }

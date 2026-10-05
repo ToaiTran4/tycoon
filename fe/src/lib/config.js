@@ -8,10 +8,10 @@ export const CONFIG = {
   levels: { capacity: [1.0, 2.1, 3.3], workers: [5, 10, 15] },
   baseWage: 40,
   sectors: {
-    agri:        { name: 'Nông nghiệp',  short: 'NN', icon: '🌾', color: 'emerald' },
-    real_estate: { name: 'Bất động sản', short: 'BDS', icon: '🏘️', color: 'blue' },
-    tech:        { name: 'Công nghệ',    short: 'CN',  icon: '💻', color: 'violet' },
-    tourism:     { name: 'Du lịch',      short: 'DL',  icon: '🏖️', color: 'amber' },
+    agri:        { name: 'Nông nghiệp',  short: 'NN',  icon: '🌾', color: 'emerald', build: [1000, 1300, 1800] },
+    real_estate: { name: 'Bất động sản', short: 'BDS', icon: '🏘️', color: 'blue', build: [1500, 2000, 2800] },
+    tech:        { name: 'Công nghệ',    short: 'CN',  icon: '💻', color: 'violet', build: [1300, 1800, 2600] },
+    tourism:     { name: 'Du lịch',      short: 'DL',  icon: '🏖️', color: 'amber', build: [1200, 1600, 2300] },
   },
   tierNames: { core: 'Trung tâm', mid: 'Nửa vòng', edge: 'Vành ngoài' },
   seats: [

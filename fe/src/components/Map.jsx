@@ -197,6 +197,7 @@ function PlotCell({ plot, players, listings, onClick, selected, myId }) {
             <span className="font-bold text-slate-100">Ô #{plot.id}</span>
             <span className="text-slate-400">{CONFIG.tierNames[plot.tier]}</span>
           </div>
+          <div className="text-sky-300 mb-1">Vị trí: ({plot.x}, {plot.y})</div>
           <div className="text-slate-300 mb-1">
             Chủ sở hữu: {owner ? <span className="font-bold">{owner.name}</span> : <em>Chưa có</em>}
           </div>
