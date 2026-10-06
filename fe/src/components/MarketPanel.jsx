@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { fmtMoney, fmtPctQ, fmtNumber, SECTOR_NAMES } from '../lib/format.js';
 import { CONFIG } from '../lib/config.js';
+import Financials from './Financials.jsx';
 import {
   TrendingDown, TrendingUp, Activity, Percent, Landmark,
   AlertTriangle, Award, Users, Warehouse, Newspaper,
@@ -14,52 +15,26 @@ import {
 const SECTOR_ICON = { agri: '🌾', real_estate: '🏘️', tech: '💻', tourism: '🏖️' };
 const SECTOR_COLOR = { agri: '#10b981', real_estate: '#3b82f6', tech: '#8b5cf6', tourism: '#f59e0b' };
 
-export default function MarketPanel({ macro, macroHistory, activeEvents, listings, dice, players, myState }) {
+export default function MarketPanel({ macro, macroHistory, activeEvents, listings, dice, players, myState, quarter }) {
   const [tab, setTab] = useState('overview');
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Top headline */}
-      <div className="game-card relative z-30 !overflow-visible group">
-        <div className="game-card-header">
-          <div className="game-card-title">
-            <Newspaper size={14} className="text-amber-400" /> BẢN TIN THỊ TRƯỜNG
-          </div>
-          <span className="text-[10px] text-slate-500">Di chuột để xem điểm tin</span>
-          <span className={`badge badge-xs font-bold border ${CONFIG.phaseColors[macro.phase]}`}>
-            <Activity size={10} className="mr-1" />
-            Giai đoạn: {CONFIG.phaseNames[macro.phase]}
-          </span>
-        </div>
-        <div className="absolute left-2 right-2 top-full z-[70] mt-2 origin-top opacity-0 pointer-events-none -translate-y-1 transition-all duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0">
-          <div className="rounded-xl border border-slate-600 bg-slate-950/95 p-3 shadow-2xl backdrop-blur">
-            <HeadlineSentence macro={macro} dice={dice} players={players} />
-          {/* 6 macro metrics */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3">
-            <Metric icon={<PiggyBank size={13} />} label="Tiền gửi" value={fmtPctQ(macro.depositRate)} />
-            <Metric icon={<Banknote size={13} />} label="Lãi vay" value={fmtPctQ(macro.lendingBase)} tone={macro.lendingBase > 0.05 ? 'warn' : 'ok'} />
-            <Metric icon={<Landmark size={13} />} label="Room tín dụng"
-              value={`${fmtNumber(macro.creditUsed)}/${fmtNumber(macro.creditRoom)}`}
-              tone={macro.creditRoom === 0 ? 'warn' : (macro.creditUsed / (macro.creditRoom || 1)) > 0.8 ? 'warn' : 'ok'}
-              sub={`${Math.round((macro.creditUsed / (macro.creditRoom || 1)) * 100)}% dùng`}
-            />
-            <Metric icon={<Users size={13} />} label="Thất nghiệp" value={fmtPctQ(macro.unemployment)} tone={macro.unemployment > 0.08 ? 'warn' : 'ok'} />
-            <Metric icon={<Scale size={13} />} label="CPI index" value={fmtNumber(macro.cpi)} />
-            <Metric icon={<Warehouse size={13} />} label="Giá đất" value={fmtNumber(macro.landIndex)} tone="good" />
-            </div>
-          </div>
-        </div>
+    <div className="market-panel game-card flex flex-col h-full min-h-0">
+      <div className="game-card-header shrink-0">
+        <div className="game-card-title"><Newspaper size={14} className="text-amber-400" /> THỊ TRƯỜNG</div>
+        <span className={`badge badge-xs font-bold border ${CONFIG.phaseColors[macro.phase]}`}>
+          <Activity size={10} className="mr-1" /> {CONFIG.phaseNames[macro.phase]}
+        </span>
       </div>
-
       {/* Tabs */}
-      <div className="game-card">
-        <div className="game-card-header !py-2">
-          <div className="tabs tabs-boxed tabs-sm w-full">
+      <div className="px-3 pt-3 shrink-0">
+          <div className="tabs tabs-boxed tabs-sm w-full grid grid-cols-5">
             {[
               ['overview', '🏢 Tổng quan'],
               ['sectors',  '📊 Ngành'],
               ['events',   '⚡ Sự kiện'],
               ['history',  '📈 Lịch sử'],
+              ['balance',  '💰 Cân đối'],
             ].map(([k, label]) => (
               <button key={k} onClick={() => setTab(k)}
                 className={`tab tab-xs md:tab-sm flex-1 ${tab === k ? 'tab-active !bg-amber-500/20 !text-amber-300 border-b-2 border-amber-500' : ''}`}>
@@ -67,18 +42,14 @@ export default function MarketPanel({ macro, macroHistory, activeEvents, listing
               </button>
             ))}
           </div>
-        </div>
-
-        <div className="p-3">
-          {tab === 'overview' && <OverviewTab macro={macro} myState={myState} />}
+      </div>
+      <div className="market-tab-body p-3 min-h-0 flex-1">
+          {tab === 'overview' && <OverviewTab macro={macro} dice={dice} players={players} myState={myState} />}
           {tab === 'sectors'  && <SectorsTab sectors={macro.sectors} />}
           {tab === 'events'   && <EventsTab events={activeEvents} />}
           {tab === 'history'  && <HistoryTab history={macroHistory} />}
-        </div>
+          {tab === 'balance'  && <Financials myState={myState} quarter={quarter} />}
       </div>
-
-      {/* Role log feed (narrative) */}
-      <RoleNewsFeed macro={macro} players={players} />
     </div>
   );
 }
@@ -127,9 +98,18 @@ function Metric({ icon, label, value, sub, tone = 'ok' }) {
 }
 
 /* ============== Overview Tab ============== */
-function OverviewTab({ macro, myState }) {
+function OverviewTab({ macro, dice, players, myState }) {
   return (
     <div className="space-y-3">
+      <HeadlineSentence macro={macro} dice={dice} players={players} />
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <Metric icon={<PiggyBank size={13} />} label="Tiền gửi" value={fmtPctQ(macro.depositRate)} />
+        <Metric icon={<Banknote size={13} />} label="Lãi vay" value={fmtPctQ(macro.lendingBase)} tone={macro.lendingBase > 0.05 ? 'warn' : 'ok'} />
+        <Metric icon={<Landmark size={13} />} label="Room tín dụng" value={`${fmtNumber(macro.creditUsed)}/${fmtNumber(macro.creditRoom)}`} />
+        <Metric icon={<Users size={13} />} label="Thất nghiệp" value={fmtPctQ(macro.unemployment)} />
+        <Metric icon={<Scale size={13} />} label="CPI index" value={fmtNumber(macro.cpi)} />
+        <Metric icon={<Warehouse size={13} />} label="Giá đất" value={fmtNumber(macro.landIndex)} tone="good" />
+      </div>
       {/* Bank + investors + gov summary */}
       <div className="grid grid-cols-3 gap-2">
         <MiniCard title="🏦 Ngân hàng" items={[
@@ -182,27 +162,9 @@ function SectorsTab({ sectors }) {
     };
   });
   return (
-    <div className="space-y-3">
-      <div className="h-40 w-full">
-        <ResponsiveContainer>
-          <BarChart data={bars} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="icon" stroke="#94a3b8" fontSize={16} />
-            <YAxis stroke="#94a3b8" tickFormatter={(v) => fmtNumber(v)} fontSize={10} />
-            <Tooltip
-              contentStyle={{ background: '#0f172a', border: '1px solid #475569', borderRadius: 8, fontSize: 12 }}
-              formatter={(v, n) => [typeof v === 'number' ? fmtNumber(Math.round(v)) : v, n]}
-            />
-            <Bar dataKey="price" name="Giá" radius={[4,4,0,0]}>
-              {bars.map((b,i) => <Cell key={i} fill={SECTOR_COLOR[b.key]} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="space-y-2">
+    <div className="grid grid-cols-2 gap-2">
         {bars.map(b => (
-          <div key={b.key} className="rounded-lg bg-slate-900/60 border border-slate-700/70 p-3 hover:border-amber-500/30 transition-colors">
+          <div key={b.key} className="rounded-lg bg-slate-900/60 border border-slate-700/70 p-2 hover:border-amber-500/30 transition-colors">
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">
                 <span className="text-xl">{b.icon}</span>
@@ -222,16 +184,8 @@ function SectorsTab({ sectors }) {
               <SStat label="Sử dụng" value={`${b.util.toFixed(0)}%`}
                 tone={b.util >= 85 ? 'good' : b.util < 40 ? 'warn' : 'ok'} />
             </div>
-            {/* Util bar */}
-            <div className="mt-2 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-              <div className="h-full rounded-full transition-all"
-                style={{ width: `${Math.min(100, b.util)}%`,
-                  background: `linear-gradient(90deg, ${SECTOR_COLOR[b.key]}, ${SECTOR_COLOR[b.key]}aa)` }}
-              />
-            </div>
           </div>
         ))}
-      </div>
     </div>
   );
 }
@@ -289,39 +243,23 @@ function HistoryTab({ history }) {
   if (!history || history.length === 0) {
     return <div className="text-center text-xs text-slate-500 italic p-6">Chưa có dữ liệu lịch sử</div>;
   }
-  const chart = history.slice(-16).map((h, i) => ({
-    q: `Q${i + 1}`,
-    Lãi: +((h.policyRate ?? 0) * 4 * 100).toFixed(1),
-    LP: +((h.inflation ?? 0) * 4 * 100).toFixed(1),
-    TT: +((h.growth ?? 0) * 4 * 100).toFixed(1),
-    NT: Math.round(h.confidence ?? 0),
-  }));
+  const recent = history.slice(-6).reverse();
   return (
-    <div className="space-y-3">
-      <div className="h-48 w-full">
-        <ResponsiveContainer>
-          <LineChart data={chart} margin={{ top: 5, right: 10, bottom: 5, left: -10 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="q" stroke="#94a3b8" fontSize={10} />
-            <YAxis stroke="#94a3b8" fontSize={10} />
-            <Tooltip
-              contentStyle={{ background: '#0f172a', border: '1px solid #475569', borderRadius: 8, fontSize: 12 }}
-              formatter={(v, n) => [`${Number(v).toFixed(1)}%`, n]}
-            />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Line type="monotone" dataKey="Lãi" stroke="#3b82f6" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="LP"  stroke="#ef4444" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="TT"  stroke="#10b981" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="NT"  stroke="#f59e0b" strokeWidth={2} dot={false} yAxisId={undefined} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
-        <LegendDot color="#3b82f6" label="Lãi suất (%/năm)" />
-        <LegendDot color="#ef4444" label="Lạm phát (%/năm)" />
-        <LegendDot color="#10b981" label="Tăng trưởng (%/năm)" />
-        <LegendDot color="#f59e0b" label="Niềm tin (điểm)" />
-      </div>
+    <div className="grid grid-cols-2 gap-2 text-[11px]">
+      {recent.map((item, index) => (
+        <div key={item.quarter || index} className="rounded-lg border border-slate-700/70 bg-slate-900/60 p-2">
+          <div className="flex items-center justify-between mb-1">
+            <b className="text-amber-300">Q{item.quarter || history.length - index}</b>
+            <span className="text-slate-500">{CONFIG.phaseNames[item.phase] || item.phase || 'Ổn định'}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-1 text-slate-400">
+            <span>Lãi <b className="text-sky-300">{fmtPctQ(item.policyRate)}</b></span>
+            <span>LP <b className="text-rose-300">{fmtPctQ(item.inflation)}</b></span>
+            <span>Tăng trưởng <b className="text-emerald-300">{fmtPctQ(item.growth)}</b></span>
+            <span>Niềm tin <b className="text-amber-300">{fmtNumber(item.confidence)}</b></span>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -335,7 +273,7 @@ function LegendDot({ color, label }) {
 }
 
 /* ============== Role News Feed ============== */
-function RoleNewsFeed({ macro, players }) {
+export function RoleNewsFeed({ macro, players, embedded = false }) {
   const topPlayer = [...(players || [])].sort((a,b) => (b.netWorth||0) - (a.netWorth||0))[0];
   const poorest = [...(players || [])].sort((a,b) => (a.netWorth||0) - (b.netWorth||0))[0];
   const items = [
@@ -365,16 +303,16 @@ function RoleNewsFeed({ macro, players }) {
     gold:   'border-yellow-500/40 bg-gradient-to-r from-yellow-500/10 to-amber-500/10',
   };
   return (
-    <div className="game-card relative z-20 !overflow-visible group">
-      <div className="game-card-header">
+    <div className={`${embedded ? 'space-y-2' : 'game-card'} relative z-20 !overflow-visible group`}>
+      {!embedded && <div className="game-card-header">
         <div className="game-card-title">
           <Award size={14} className="text-amber-400" /> CẨM NANG
         </div>
         <button className="btn btn-ghost btn-xs text-slate-400" title="Mở cẩm nang" aria-label="Mở cẩm nang">
           <HelpCircle size={16} />
         </button>
-      </div>
-      <div className="absolute left-2 right-2 top-full z-[70] mt-2 max-h-80 origin-top overflow-y-auto rounded-xl border border-slate-600 bg-slate-950/95 p-3 opacity-0 pointer-events-none -translate-y-1 shadow-2xl backdrop-blur transition-all duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0">
+      </div>}
+      <div className={embedded ? 'space-y-2' : 'absolute left-2 right-2 top-full z-[70] mt-2 max-h-80 origin-top overflow-y-auto rounded-xl border border-slate-600 bg-slate-950/95 p-3 opacity-0 pointer-events-none -translate-y-1 shadow-2xl backdrop-blur transition-all duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0'}>
           {items.map((it, i) => (
             <div key={i} className={`rounded-lg border px-3 py-2.5 text-xs animate-slide-in ${toneCls[it.tone]}`}
                  style={{ animationDelay: `${i*40}ms` }}>

@@ -1,19 +1,16 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../lib/useGame.js';
 import { api } from '../lib/api.js';
 import Header from '../components/Header.jsx';
 import GameMap from '../components/Map.jsx';
-import Financials from '../components/Financials.jsx';
 import ActionPanel from '../components/ActionPanel.jsx';
 import MarketPanel from '../components/MarketPanel.jsx';
-import TabReports from '../components/TabReports.jsx';
-import TabRanking from '../components/TabRanking.jsx';
 import ResultScreen from '../components/ResultScreen.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Copy, Share2, AlertTriangle, ArrowLeft,
-  Crown, Play, Building2, ClipboardList, BarChart3, ChevronDown
+  Crown, Play
 } from 'lucide-react';
 import { seatColor } from '../lib/config.js';
 import { toast, Toaster } from 'sonner';
@@ -25,8 +22,6 @@ export default function Game() {
   const { data, error, conn, token, mutate } = useGame(code);
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [previewResult, setPreviewResult] = useState(null);
-  const [bottomTab, setBottomTab] = useState('ranking');
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const [copyMsg, setCopyMsg] = useState('');
 
   // Auto preview my pending actions on change
@@ -176,7 +171,7 @@ export default function Game() {
   const isBankrupt = myState?.status === 'bankrupt' || myState?.status === 'acquired';
 
   return (
-    <div className="min-h-screen p-2 md:p-4 lg:p-5 relative">
+    <div className="game-shell p-2 md:p-4 lg:p-5 relative flex flex-col">
       <Toaster richColors position="top-right" closeButton theme="dark" />
 
       {/* Bankrupt / eliminated banner */}
@@ -206,25 +201,25 @@ export default function Game() {
       </AnimatePresence>
 
       {/* Header */}
-      <div className="max-w-[1600px] mx-auto">
+      <div className="game-header-shell max-w-[1600px] mx-auto w-full shrink-0">
         <Header game={game} macro={macro} dice={dice} conn={conn}
-                players={players} me={me} onResolve={handleResolve} />
+          players={players} me={me} myState={myState} code={code} token={token}
+          ranking={ranking} plots={plots} finished={finished || game.status === 'finished'} onResolve={handleResolve} />
       </div>
 
       {/* Main 3-column layout */}
-      <div className="max-w-[1600px] mx-auto mt-4 grid grid-cols-1 xl:grid-cols-12 gap-4">
-        {/* LEFT: Market + Financials */}
-        <div className="xl:col-span-3 flex flex-col gap-4 order-2 xl:order-1">
+      <div className="game-main-shell max-w-[1600px] mx-auto mt-4 w-full flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-12 gap-4">
+        {/* LEFT: Market overview and balance tabs */}
+        <div className="game-column xl:col-span-3 flex flex-col order-2 xl:order-1 min-h-0">
           <MarketPanel
             macro={macro} macroHistory={macroHistory}
             activeEvents={activeEvents} listings={listings}
-            dice={dice} players={players} myState={myState}
+            dice={dice} players={players} myState={myState} quarter={game.quarter}
           />
         </div>
 
-        {/* MIDDLE: Financials + Map  */}
-        <div className="xl:col-span-6 flex flex-col gap-4 order-1 xl:order-2">
-          <Financials myState={myState} quarter={game.quarter} compact />
+        {/* MIDDLE: Map */}
+        <div className="game-column xl:col-span-6 flex flex-col gap-4 order-1 xl:order-2 min-h-0 overflow-y-auto">
           <div className="game-card p-3 md:p-5">
             <GameMap
               plots={plots} players={players} listings={listings}
@@ -235,7 +230,7 @@ export default function Game() {
         </div>
 
         {/* RIGHT: Action Panel */}
-        <div className="xl:col-span-3 order-3">
+        <div className="game-column xl:col-span-3 order-3 min-h-0 overflow-y-auto">
           <ActionPanel
             selectedPlot={selectedPlot}
             myState={myState}
@@ -253,75 +248,6 @@ export default function Game() {
         </div>
       </div>
 
-      {/* Bottom Tabs: Reports / Ranking */}
-      <div className="max-w-[1600px] mx-auto mt-4">
-        <div className="game-card">
-          <div className="game-card-header flex-wrap gap-2">
-            <div className="game-card-title">
-              <ClipboardList size={14} className="text-amber-400" /> THÔNG TIN CHI TIẾT
-            </div>
-            <button onClick={() => setDetailsOpen(value => !value)}
-              className="btn btn-ghost btn-xs text-slate-400 hover:text-amber-300"
-              title={detailsOpen ? 'Ẩn thông tin chi tiết' : 'Mở thông tin chi tiết'}
-              aria-label={detailsOpen ? 'Ẩn thông tin chi tiết' : 'Mở thông tin chi tiết'}>
-              <ChevronDown size={16} className={`transition-transform ${detailsOpen ? 'rotate-180' : ''}`} />
-            </button>
-          </div>
-
-          {detailsOpen && <div className="p-2 md:p-4">
-            <div className="tabs tabs-boxed tabs-sm mb-3 w-fit">
-              <button onClick={() => setBottomTab('ranking')}
-                className={`tab ${bottomTab==='ranking' ? 'tab-active !bg-amber-500/20 !text-amber-300' : ''}`}>
-                <BarChart3 size={13} className="mr-1.5" /> Xếp hạng & Thống kê
-              </button>
-              <button onClick={() => setBottomTab('reports')}
-                className={`tab ${bottomTab==='reports' ? 'tab-active !bg-amber-500/20 !text-amber-300' : ''}`}>
-                <Building2 size={13} className="mr-1.5" /> Báo cáo & Sổ cái
-              </button>
-            </div>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={bottomTab}
-                initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.15 }}
-              >
-                {bottomTab === 'ranking' && (
-                  <TabRanking
-                    players={enrichPlayers(players, myState)}
-                    myId={myId}
-                    finished={finished || game.status === 'finished'}
-                    ranking={ranking}
-                    plots={plots}
-                    macro={macro}
-                  />
-                )}
-                {bottomTab === 'reports' && (
-                  <TabReports
-                    code={code} token={token}
-                    players={players}
-                    quarter={game.quarter}
-                    myState={myState}
-                    myId={myId}
-                  />
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="mt-8 pb-6 text-center">
-        <div className="inline-flex items-center gap-3 text-[11px] text-slate-500 bg-slate-900/60 border border-slate-800 px-4 py-2 rounded-full">
-          <span>🏢 <b className="text-slate-400">Chest · Tycoon Kinh Tế</b> Engine</span>
-          <span className="opacity-40">•</span>
-          <span>Build: {data.version} · {new Date(data.now).toLocaleString('vi-VN')}</span>
-          <span className="opacity-40">•</span>
-          <button onClick={() => navigate('/')} className="link link-hover flex items-center gap-1">
-            <ArrowLeft size={12}/> Về trang chủ
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -340,7 +266,7 @@ function LobbyScreen({ code, players, me, game, token, onStart, onHome, copyMsg,
   };
 
   return (
-    <div className="min-h-screen py-6 px-3 md:py-10 flex flex-col items-center">
+    <div className="h-screen overflow-y-auto py-6 px-3 md:py-10 flex flex-col items-center">
       <Toaster richColors position="top-right" closeButton theme="dark" />
       <div className="w-full max-w-3xl space-y-5 relative z-10">
         {/* Header */}
@@ -378,11 +304,11 @@ function LobbyScreen({ code, players, me, game, token, onStart, onHome, copyMsg,
           className="game-card p-4 md:p-5 grid grid-cols-3 gap-3 text-center text-xs">
           <Stat label="Tổng số quý" value={`${game.totalQuarters} quý`} sub={`~${Math.ceil(game.totalQuarters/4)} năm`} />
           <Stat label="Thời gian / quý" value={game.quarterSeconds > 0 ? `${game.quarterSeconds}s` : '∞'} sub={game.quarterSeconds > 0 ? 'Tự động chốt khi hết giờ' : 'Bấm Sẵn sàng để chốt'} />
-          <Stat label="Hiện có" value={`${players?.length || 0} / 6`} sub={isHost ? 'Bạn là chủ phòng' : host ? `Chủ: ${host.name}` : ''} />
+          <Stat label={game.mode === 'practice' ? 'Phòng tập luyện' : 'Hiện có'} value={game.mode === 'practice' ? `${players?.filter(p => p.isBot).length || 0} Bot` : `${players?.length || 0} / 6`} sub={isHost ? 'Bạn là chủ phòng' : host ? `Chủ: ${host.name}` : ''} />
         </motion.div>
 
         {/* Player list */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="game-card overflow-hidden">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="game-card">
           <div className="game-card-header">
             <div className="game-card-title">
               <Users size={14} className="text-amber-400" /> DANH SÁCH NGƯỜI CHƠI
@@ -413,6 +339,7 @@ function LobbyScreen({ code, players, me, game, token, onStart, onHome, copyMsg,
                     <div className="font-bold text-slate-100 text-base truncate">
                       {p.name}
                       {isMe && <span className="ml-2 badge badge-xs badge-warning">BẠN</span>}
+                      {p.isBot && <span className="ml-2 badge badge-xs badge-info">BOT · {p.botType || 'balanced'}</span>}
                     </div>
                     <div className="text-[11px] text-slate-500">Ghế #{p.seat}</div>
                   </div>

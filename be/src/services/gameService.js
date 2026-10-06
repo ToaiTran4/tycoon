@@ -3,6 +3,8 @@ import { publish } from './realtime.js';
 import { schedule, cancel } from './scheduler.js';
 import { initGameState } from '../engine/init.js';
 import { resolveQuarter } from '../engine/resolve.js';
+import { BOTS } from '../engine/bots.js';
+import { validateActionsForPlayer } from '../engine/validate.js';
 import { hashToken, newToken } from './auth.js';
 import { CONFIG } from '../engine/config.js';
 
@@ -19,29 +21,47 @@ async function lockGame(tx, id) {
   }
 }
 
-export async function createGame({ hostName, avatar = 'male', totalQuarters = 20, quarterSeconds = 0 }) {
+const BOT_NAMES = ['Bot An', 'Bot Bình', 'Bot Chiến', 'Bot Dũng', 'Bot Minh'];
+
+export async function createGame({ hostName, avatar = 'male', mode = 'standard', botCount = 2, botType = 'balanced', totalQuarters = 20, quarterSeconds = 0 }) {
   const code = Math.random().toString(36).substring(2, 8).toUpperCase();
   const token = newToken();
   const tokenHash = hashToken(token);
   const seed = Math.random().toString(36).substring(2, 10);
+
+  const botPlayers = mode === 'practice'
+    ? Array.from({ length: botCount }, (_, index) => ({
+        name: BOT_NAMES[index],
+        avatar: index % 2 === 0 ? 'male' : 'female',
+        tokenHash: hashToken(newToken()),
+        seat: index + 1,
+        status: 'active',
+        ready: false,
+        isBot: true,
+        botType
+      }))
+    : [];
 
   const game = await prisma.game.create({
     data: {
       code,
       totalQuarters,
       quarterSeconds,
+      mode,
       seed,
       status: 'lobby',
       phase: 'lobby',
       players: {
-        create: {
+        create: [{
           name: hostName,
           avatar,
           tokenHash,
           seat: 0,
           status: 'active',
-          ready: false
-        }
+          ready: false,
+          isBot: false,
+          botType: 'balanced'
+        }, ...botPlayers]
       }
     },
     include: { players: true }
@@ -146,7 +166,7 @@ export async function setReady(code, playerId, ready) {
     include: { players: true }
   });
 
-  if (game.players.every(p => p.ready || p.status !== 'active')) {
+  if (game.players.every(p => p.isBot || p.ready || p.status !== 'active')) {
     // Auto resolve if all ready
     resolveNow(code).catch(console.error);
   }
@@ -168,7 +188,15 @@ export async function resolveNow(code) {
 
     const actions = {};
     for (const p of game.players) {
-      actions[p.id] = p.pending;
+      if (!p.isBot) {
+        actions[p.id] = p.pending;
+        continue;
+      }
+
+      const strategy = BOTS[p.botType] || BOTS.balanced;
+      const proposed = strategy(game.state, p.id) || [];
+      const checked = validateActionsForPlayer(game.state, p.id, proposed);
+      actions[p.id] = checked.ok ? proposed : [];
     }
 
     const result = resolveQuarter(game.state, actions);
@@ -254,6 +282,7 @@ export function buildView(game, me, players, state) {
         deadlineAt: game.deadlineAt || null,
         hostPlayerId: game.hostPlayerId,
         quarterSeconds: game.quarterSeconds || 0
+        ,mode: game.mode || 'standard'
       },
       me: me ? { playerId: me.id, seat: me.seat, name: me.name, avatar: me.avatar || 'male', ready: me.ready || false } : null,
       players: dbPs.map(p => ({
@@ -265,6 +294,8 @@ export function buildView(game, me, players, state) {
         rating: null,
         ready: p.ready || false,
         netWorth: CONFIG.startCash
+        ,isBot: !!p.isBot
+        ,botType: p.botType || null
       })),
       macro: null,
       macroHistory: [],
@@ -295,6 +326,7 @@ export function buildView(game, me, players, state) {
       deadlineAt: game.deadlineAt,
       hostPlayerId: game.hostPlayerId,
       quarterSeconds: game.quarterSeconds || 0
+      ,mode: game.mode || 'standard'
     },
     me: me ? { playerId: me.id, seat: me.seat, name: me.name, avatar: me.avatar || 'male', ready: me.ready } : null,
     players: Object.values(state.players).map(p => {
@@ -308,6 +340,8 @@ export function buildView(game, me, players, state) {
         rating: p.rating,
         ready: dbp?.ready || false,
         netWorth: p.history[p.history.length - 1]?.netWorth || CONFIG.startCash
+        ,isBot: !!dbp?.isBot
+        ,botType: dbp?.botType || null
       };
     }),
     macro: state.macro,

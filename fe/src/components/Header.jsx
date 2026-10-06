@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
-import { fmtPctQ, fmtNumber } from '../lib/format.js';
 import { seatColor, CONFIG } from '../lib/config.js';
 import {
   Building2, Timer, Radio, Dices, Users, TrendingUp,
-  Flag, Zap, Crown
+  Flag, Zap, Crown, BookOpen, BadgeDollarSign, ClipboardList,
+  BarChart3
 } from 'lucide-react';
+import Financials from './Financials.jsx';
+import { RoleNewsFeed } from './MarketPanel.jsx';
+import TabReports from './TabReports.jsx';
+import TabRanking from './TabRanking.jsx';
 
 function useCountdown(deadlineAt) {
   const [left, setLeft] = useState(null);
@@ -28,8 +32,10 @@ function fmtClock(s) {
   return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
 }
 
-export default function Header({ game, macro, dice, conn, players, me, onResolve }) {
+export default function Header({ game, macro, dice, conn, players, me, myState, code, token, ranking, plots, finished, onResolve }) {
   const left = useCountdown(game?.deadlineAt);
+  const [headerPanel, setHeaderPanel] = useState(null);
+  const [detailTab, setDetailTab] = useState('ranking');
   if (!game || !macro) return null;
   const year = Math.ceil(game.quarter / 4);
   const qInYear = ((game.quarter - 1) % 4) + 1;
@@ -37,7 +43,7 @@ export default function Header({ game, macro, dice, conn, players, me, onResolve
 
   return (
     <header
-      className="relative rounded-2xl overflow-hidden border border-slate-700/70 shadow-2xl animate-slide-up"
+      className="relative rounded-2xl border border-slate-700/70 shadow-2xl animate-slide-up"
       style={{
         background:
           'linear-gradient(120deg, rgba(15,23,42,0.95), rgba(30,41,59,0.92) 45%, rgba(120,53,15,0.18) 100%)',
@@ -82,30 +88,6 @@ export default function Header({ game, macro, dice, conn, players, me, onResolve
         {/* Spacer */}
         <div className="flex-1 min-w-0" />
 
-        {/* Macro strip */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-700/60">
-          <MacroStat label="Lãi suất" value={fmtPctQ(macro.policyRate)} />
-          <Divider />
-          <MacroStat label="Lạm phát" value={fmtPctQ(macro.inflation)} tone={macro.inflation > 0.08 ? 'bad' : 'ok'} />
-          <Divider />
-          <MacroStat label="Tăng trưởng" value={fmtPctQ(macro.growth)} tone={macro.growth >= 0 ? 'good' : 'bad'} />
-          <Divider />
-          <MacroStat label="Lương" value={`${fmtNumber(macro.wageIndex)}`} />
-          <Divider />
-          <MacroStat label="Niềm tin" value={fmtNumber(macro.confidence)} tone={macro.confidence > 65 ? 'good' : macro.confidence < 40 ? 'bad' : 'ok'} />
-        </div>
-
-        {/* Dice */}
-        {dice && (
-          <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900/70 border border-slate-700/70">
-            <span className="text-[10px] uppercase font-black tracking-wider text-slate-500">Xúc xắc</span>
-            <div className="flex gap-1.5">
-              <Die value={dice.a} />
-              <Die value={dice.b} />
-            </div>
-          </div>
-        )}
-
         {/* Countdown */}
         {left != null && (
           <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border font-mono font-bold text-sm
@@ -121,6 +103,18 @@ export default function Header({ game, macro, dice, conn, players, me, onResolve
           ${conn === 'ws' ? 'badge-success' : 'badge-warning'}`}>
           <Radio size={11} className="animate-pulse" />
           {conn === 'ws' ? 'LIVE' : 'POLL'}
+        </div>
+
+        <div className="flex items-center gap-1 rounded-xl border border-slate-700/60 bg-slate-900/60 p-1">
+          <button onClick={() => setHeaderPanel(headerPanel === 'guide' ? null : 'guide')}
+            className={`btn btn-ghost btn-xs ${headerPanel === 'guide' ? 'text-amber-300' : 'text-slate-400'}`}
+            title="Cẩm nang" aria-label="Cẩm nang"><BookOpen size={15} /></button>
+          <button onClick={() => setHeaderPanel(headerPanel === 'balance' ? null : 'balance')}
+            className={`btn btn-ghost btn-xs ${headerPanel === 'balance' ? 'text-amber-300' : 'text-slate-400'}`}
+            title="Bảng cân đối nhanh" aria-label="Bảng cân đối nhanh"><BadgeDollarSign size={15} /></button>
+          <button onClick={() => setHeaderPanel(headerPanel === 'details' ? null : 'details')}
+            className={`btn btn-ghost btn-xs ${headerPanel === 'details' ? 'text-amber-300' : 'text-slate-400'}`}
+            title="Thông tin chi tiết" aria-label="Thông tin chi tiết"><ClipboardList size={15} /></button>
         </div>
 
         {/* Players ready strip */}
@@ -172,14 +166,20 @@ export default function Header({ game, macro, dice, conn, players, me, onResolve
         )}
       </div>
 
-      {/* Mobile macro strip */}
-      <div className="md:hidden px-3 pb-3 grid grid-cols-5 gap-1">
-        <MacroStat label="Lãi" value={fmtPctQ(macro.policyRate)} compact />
-        <MacroStat label="L.phát" value={fmtPctQ(macro.inflation)} tone={macro.inflation > 0.08 ? 'bad' : 'ok'} compact />
-        <MacroStat label="T.trưởng" value={fmtPctQ(macro.growth)} tone={macro.growth >= 0 ? 'good' : 'bad'} compact />
-        <MacroStat label="Lương" value={fmtNumber(macro.wageIndex)} compact />
-        <MacroStat label="Niềm tin" value={fmtNumber(macro.confidence)} compact />
-      </div>
+      {headerPanel && (
+        <div className="header-popover absolute left-2 right-2 top-full z-[100] mt-2 max-h-[min(70vh,42rem)] overflow-y-auto rounded-xl border border-slate-600 bg-slate-950/95 p-3 shadow-2xl backdrop-blur">
+          {headerPanel === 'guide' && <RoleNewsFeed macro={macro} players={players} embedded />}
+          {headerPanel === 'balance' && <Financials myState={myState} quarter={game.quarter} compact />}
+          {headerPanel === 'details' && <>
+            <div className="tabs tabs-boxed tabs-sm mb-3 w-fit">
+              <button onClick={() => setDetailTab('ranking')} className={`tab ${detailTab === 'ranking' ? 'tab-active !bg-amber-500/20 !text-amber-300' : ''}`}><BarChart3 size={13} className="mr-1.5" /> Xếp hạng</button>
+              <button onClick={() => setDetailTab('reports')} className={`tab ${detailTab === 'reports' ? 'tab-active !bg-amber-500/20 !text-amber-300' : ''}`}><ClipboardList size={13} className="mr-1.5" /> Báo cáo</button>
+            </div>
+            {detailTab === 'ranking' && <TabRanking players={players} myId={me?.playerId} finished={finished} ranking={ranking} plots={plots} macro={macro} />}
+            {detailTab === 'reports' && <TabReports code={code} token={token} players={players} quarter={game.quarter} myState={myState} myId={me?.playerId} />}
+          </>}
+        </div>
+      )}
     </header>
   );
 }

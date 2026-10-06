@@ -46,7 +46,7 @@ export default function ActionPanel({
   };
 
   return (
-    <div className="game-card flex flex-col h-full min-h-[520px]">
+    <div className="game-card flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="game-card-header">
         <div className="game-card-title">

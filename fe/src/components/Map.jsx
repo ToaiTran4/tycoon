@@ -45,7 +45,7 @@ export default function GameMap({ plots, players, listings, onPlotClick, selecte
           }}
         />
         {/* Street/grid */}
-        <div className="relative z-10 grid gap-2 md:gap-3"
+        <div className="city-grid relative z-10 grid gap-2 md:gap-3"
           style={{ gridTemplateColumns: `repeat(${w}, minmax(0, 1fr))` }}
         >
           {Array.from({ length: h }).map((_, y) =>

@@ -184,7 +184,7 @@ export default function Rules() {
   ];
 
   return (
-    <div className="min-h-screen py-6 px-3 md:py-10">
+    <div className="h-screen overflow-y-auto py-6 px-3 md:py-10">
       <div className="w-full max-w-4xl mx-auto space-y-5 relative z-10">
         <motion.header initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/60 border border-slate-700/70 mb-3">

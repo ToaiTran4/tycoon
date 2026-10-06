@@ -16,6 +16,8 @@ html, body, #root {
 }
 
 body {
+  height: 100vh;
+  height: 100dvh;
   background:
     radial-gradient(1200px 600px at 10% -10%, rgba(245, 158, 11, 0.08), transparent 60%),
     radial-gradient(900px 500px at 110% 10%, rgba(59, 130, 246, 0.08), transparent 60%),
@@ -35,7 +37,7 @@ body {
 /* Game card reusable style */
 @layer components {
   .game-card {
-    @apply relative rounded-xl overflow-hidden bg-gradient-to-br from-slate-800/90 to-slate-900/90
+    @apply relative rounded-xl bg-gradient-to-br from-slate-800/90 to-slate-900/90
            border border-slate-700/70 shadow-xl backdrop-blur-sm
            transition-all duration-300;
   }
@@ -96,6 +98,10 @@ body {
 
 /* Wood / board game frame */
 .board-frame {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: min(62dvh, 48vw);
+  min-height: 0;
   background:
     linear-gradient(135deg, rgba(120, 53, 15, 0.4) 0%, rgba(146, 64, 14, 0.3) 50%, rgba(69, 26, 3, 0.5) 100%),
     repeating-linear-gradient(45deg, rgba(180, 83, 9, 0.15) 0, rgba(180, 83, 9, 0.15) 2px, transparent 2px, transparent 8px);
@@ -104,6 +110,7 @@ body {
     inset 0 0 60px rgba(0,0,0,0.5),
     0 10px 40px rgba(0,0,0,0.6);
 }
+.city-grid { height: 100%; grid-auto-rows: minmax(0, 1fr); }
 
 /* Sector specific gradient tiles */
 .sector-agri { background: linear-gradient(135deg, #065f46 0%, #022c22 100%); border-color: rgba(16,185,129,0.4); }
@@ -137,6 +144,33 @@ body {
 .chibi-arm-right { right: 7px; transform: rotate(-22deg); }
 .avatar-choice { @apply flex items-center justify-center gap-2 rounded-lg border border-slate-700/70 bg-slate-900/50 px-3 py-2 text-xs text-slate-300 transition-colors hover:border-amber-500/50; }
 .avatar-choice-active { @apply border-amber-500/80 bg-amber-500/10 text-amber-200 ring-1 ring-amber-500/40; }
+
+.game-column { scrollbar-width: none; }
+.game-column::-webkit-scrollbar { display: none; }
+.game-main-shell { scrollbar-width: none; }
+
+.game-shell {
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  width: min(100%, 100vw);
+}
+.game-main-shell {
+  max-height: calc(100dvh - 9rem);
+  grid-template-rows: minmax(0, 1fr);
+}
+.header-popover { max-width: calc(100vw - 1rem); }
+
+@media (max-width: 1279px) {
+  .game-shell { height: auto; max-height: none; min-height: 100dvh; }
+  .game-main-shell { max-height: none; }
+  .board-frame { max-height: min(58dvh, 92vw); }
+}
+
+@media (max-width: 1279px) {
+  .game-main-shell { grid-template-rows: auto; }
+}
 
 @media (max-width: 1023px) {
   .city-stage { @apply block; }

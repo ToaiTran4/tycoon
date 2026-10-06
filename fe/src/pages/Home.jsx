@@ -15,6 +15,9 @@ export default function Home() {
   const [tab, setTab] = useState('create');
   const [createName, setCreateName] = useState('');
   const [createAvatar, setCreateAvatar] = useState('male');
+  const [createMode, setCreateMode] = useState('standard');
+  const [botCount, setBotCount] = useState(2);
+  const [botType, setBotType] = useState('balanced');
   const [totalQuarters, setTotalQuarters] = useState(20);
   const [quarterSeconds, setQuarterSeconds] = useState(0);
 
@@ -29,7 +32,7 @@ export default function Home() {
     if (createName.length < 2) return alert('Tên quá ngắn (tối thiểu 2 ký tự)');
     setLoading(true);
     try {
-      const res = await api.createGame({ hostName: createName, avatar: createAvatar, totalQuarters, quarterSeconds });
+      const res = await api.createGame({ hostName: createName, avatar: createAvatar, mode: createMode, botCount, botType, totalQuarters, quarterSeconds });
       saveToken(res.code, res.token);
       navigate(`/game/${res.code}`);
     } catch (e) {
@@ -64,7 +67,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen py-6 px-3 md:py-10 flex flex-col items-center">
+    <div className="h-screen overflow-y-auto py-6 px-3 md:py-10 flex flex-col items-center">
       {/* Background deco */}
       <div className="fixed inset-0 pointer-events-none" style={{
         background:
@@ -142,13 +145,19 @@ export default function Home() {
             >
               <Users size={13} className="mr-1" /> VÀO PHÒNG CÓ SẴN
             </button>
+            <button
+              onClick={() => { setTab('practice'); setCreateMode('practice'); }}
+              className={`tab ${tab === 'practice' ? 'tab-active !bg-slate-800 !text-emerald-300 border-b-2 border-emerald-500' : '!text-slate-400'}`}
+            >
+              🤖 PHÒNG TẬP LUYỆN
+            </button>
           </div>
 
           <div className="p-5 md:p-6">
             <AnimatePresence mode="wait">
-              {tab === 'create' && (
+              {(tab === 'create' || tab === 'practice') && (
                 <motion.form
-                  key="create" onSubmit={handleCreate}
+                  key={tab} onSubmit={handleCreate}
                   initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }}
                   className="space-y-4"
                 >
@@ -166,6 +175,31 @@ export default function Home() {
                   <div>
                     <div className="label"><span className="label-text font-bold">🎭 Chọn nhân vật</span></div>
                     <AvatarPicker value={createAvatar} onChange={setCreateAvatar} disabled={loading} />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 rounded-lg border border-slate-700/70 bg-slate-900/40 p-3">
+                    <label className="form-control">
+                      <span className="label-text text-xs font-bold mb-1">Chế độ</span>
+                      <select className="select select-bordered select-sm" value={createMode} onChange={e => setCreateMode(e.target.value)} disabled={loading || tab === 'practice'}>
+                        <option value="standard">Chơi cùng người</option>
+                        <option value="practice">Phòng tập luyện với Bot</option>
+                      </select>
+                    </label>
+                    <label className={`form-control ${createMode !== 'practice' ? 'opacity-40' : ''}`}>
+                      <span className="label-text text-xs font-bold mb-1">Số Bot</span>
+                      <select className="select select-bordered select-sm" value={botCount} onChange={e => setBotCount(parseInt(e.target.value))} disabled={loading || createMode !== 'practice'}>
+                        {[1, 2, 3, 4, 5].map(count => <option key={count} value={count}>{count} Bot</option>)}
+                      </select>
+                    </label>
+                    <label className={`form-control ${createMode !== 'practice' ? 'opacity-40' : ''}`}>
+                      <span className="label-text text-xs font-bold mb-1">Chiến thuật Bot</span>
+                      <select className="select select-bordered select-sm" value={botType} onChange={e => setBotType(e.target.value)} disabled={loading || createMode !== 'practice'}>
+                        <option value="passive">Thận trọng</option>
+                        <option value="conservative">Bảo toàn</option>
+                        <option value="balanced">Cân bằng</option>
+                        <option value="aggressive">Tấn công</option>
+                        <option value="random">Ngẫu nhiên</option>
+                      </select>
+                    </label>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label className="form-control w-full">
@@ -201,7 +235,7 @@ export default function Home() {
                     disabled={loading || createName.length < 2}
                     className={`btn-game btn btn-lg w-full border-0 bg-gradient-to-r from-amber-500 to-orange-500 text-amber-950 shadow-lg shadow-amber-500/20 hover:shadow-glow-yellow ${loading ? 'loading' : ''}`}
                   >
-                    {loading ? 'Đang khởi tạo ván...' : (<><Play size={18} className="mr-2" /> TẠO VÁN GAME · BẮT ĐẦU ĐẦU TƯ</>)}
+                    {loading ? 'Đang khởi tạo ván...' : (<><Play size={18} className="mr-2" /> {tab === 'practice' ? 'BẮT ĐẦU PHÒNG TẬP LUYỆN' : 'TẠO VÁN GAME · BẮT ĐẦU ĐẦU TƯ'}</>)}
                   </button>
                 </motion.form>
               )}

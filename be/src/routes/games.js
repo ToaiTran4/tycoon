@@ -15,6 +15,9 @@ apiRouter.get('/health', (_req, res) => {
 const GameCreateSchema = z.object({
   hostName: z.string().min(2).max(20),
   avatar: z.enum(['male', 'female']).optional().default('male'),
+  mode: z.enum(['standard', 'practice']).optional().default('standard'),
+  botCount: z.number().int().min(1).max(5).optional().default(2),
+  botType: z.enum(['passive', 'conservative', 'balanced', 'aggressive', 'random']).optional().default('balanced'),
   totalQuarters: z.number().int().min(4).max(60).optional().default(20),
   quarterSeconds: z.number().int().min(0).max(3600).optional().default(0),
 });
